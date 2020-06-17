@@ -3,8 +3,9 @@ package common
 // Source is the arguments coming in
 type Source struct {
 	Repository string            `json:"repository"`
-	SecretName string            `json:"secret_name"`
 	Options    map[string]string `json:"options"`
+	Tags       []string          `json:"tags"`
+	Host       string            `json:"host"`
 }
 
 // Version is version

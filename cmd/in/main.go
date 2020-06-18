@@ -2,18 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/arekmano/restic-store/exec"
 	"github.com/arekmano/restic-store/store"
 	"github.com/chimano/restic-resource/common"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	c := &OutCommand{CommandReader: &common.Reader{}}
+	c := &InCommand{CommandReader: &common.Reader{}}
 
 	command, err := c.generateResticCommand()
 	if err != nil {
@@ -25,23 +27,23 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	parsedOutput, err := c.parseCommandOutput(output)
+	versionID, err := c.parseCommandOutput(output)
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	response := OutResponse{Version: common.Version{
-		VersionID: parsedOutput.SnapshotId,
+	response := InResponse{Version: common.Version{
+		VersionID: versionID,
 	},
 	}
 	json.NewEncoder(os.Stdout).Encode(response)
 }
 
-type OutCommand struct {
+type InCommand struct {
 	CommandReader common.InputReader
 }
 
-func (c *OutCommand) generateResticCommand() (*exec.ResticCommand, error) {
-	sourceDir, err := c.CommandReader.GetInputDirectory()
+func (c *InCommand) generateResticCommand() (*exec.ResticCommand, error) {
+	destDir, err := c.CommandReader.GetInputDirectory()
 	if err != nil {
 		return nil, err
 	}
@@ -53,26 +55,25 @@ func (c *OutCommand) generateResticCommand() (*exec.ResticCommand, error) {
 	resticConfig := &store.ResticConfiguration{Host: request.Source.Host, Repository: request.Source.Repository}
 	restic := store.NewRestic(resticConfig)
 	resticInput := &store.ResticOptions{Options: request.Source.Options, Tags: request.Source.Tags}
-	return restic.Put(sourceDir, resticInput), nil
+	return restic.Get(destDir, resticInput), nil
 }
 
-func (c *OutCommand) parseCommandOutput(output []byte) (*BackupResponse, error) {
-	pattern := regexp.MustCompile(`\{.*\"message_type\":\"summary\".*\}\n*`)
-	matches := pattern.FindAll(output, -1)
-	completed := matches[len(matches)-1]
-	var parsed BackupResponse
-	err := json.Unmarshal(completed, &parsed)
-	if err != nil {
-		return nil, errors.Wrap(err, "error parsing byte output")
+func (c *InCommand) parseCommandOutput(output []byte) (string, error) {
+	// SAMPLE OUTPUT
+	// restoring <Snapshot 37e24a73 of [/blah/blah/go.mod] at 2020-06-17 17:10:12.843022846 -0400 EDT by user@host> to destDir/
+
+	pattern := regexp.MustCompile(`Snapshot\s[a-zA-Z0-9]+\s`)
+	match := string(pattern.Find(output))
+	fmt.Print(string(output))
+	splittedMatch := strings.Split(match, " ")
+	if len(splittedMatch) < 2 {
+		return "", errors.New("Could not identify snapshot version from output")
 	}
-	return &parsed, nil
+	id := strings.Split(match, " ")[1]
+	return id, nil
 }
 
-type BackupResponse struct {
-	SnapshotId string `json:"snapshot_id"`
-}
-
-type OutResponse struct {
+type InResponse struct {
 	Version  common.Version    `json:"version"`
 	Metadata map[string]string `json:"metadata"`
 }

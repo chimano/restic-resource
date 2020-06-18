@@ -12,7 +12,7 @@ type MockReader struct {
 }
 
 func (r *MockReader) GetInputDirectory() (string, error) {
-	return os.Getenv("TEST_OUTFILE"), nil
+	return os.Getenv("TEST_INDIR"), nil
 }
 
 func (r *MockReader) GetRequest() (*common.Request, error) {
@@ -24,8 +24,8 @@ func (r *MockReader) GetRequest() (*common.Request, error) {
 	}, nil
 }
 
-func TestOut(t *testing.T) {
-	c := OutCommand{CommandReader: &MockReader{}}
+func TestIn(t *testing.T) {
+	c := InCommand{CommandReader: &MockReader{}}
 	command, _ := c.generateResticCommand()
 	output, _ := command.Execute()
 	parsed, _ := c.parseCommandOutput(output)

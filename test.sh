@@ -10,6 +10,7 @@ restic init --repo $TEST_REPO
 restic backup --repo testrepo --host $TEST_HOST $TEST_OUTFILE
 go test github.com/chimano/restic-resource/cmd/out
 go test github.com/chimano/restic-resource/cmd/in
+go test github.com/chimano/restic-resource/cmd/check
 
 # cleaning up
 rm -rf $TEST_INDIR

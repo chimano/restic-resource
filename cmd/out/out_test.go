@@ -24,7 +24,23 @@ func (r *MockReader) GetRequest() (*common.Request, error) {
 	}, nil
 }
 
-func TestOut(t *testing.T) {
+func TestOutCommand(t *testing.T) {
+	c := OutCommand{CommandReader: &MockReader{}}
+	command, _ := c.generateResticCommand()
+	expectedArgs := []string{
+		"--repo",
+		os.Getenv("TEST_REPO"),
+		"--host",
+		os.Getenv("TEST_HOST"),
+		"--verbose",
+		"--json",
+		"backup",
+		os.Getenv("TEST_OUTFILE"),
+	}
+	assert.Equal(t, command.Arguments, expectedArgs)
+}
+
+func TestOutFull(t *testing.T) {
 	c := OutCommand{CommandReader: &MockReader{}}
 	command, _ := c.generateResticCommand()
 	output, _ := command.Execute()

@@ -55,7 +55,8 @@ func (c *InCommand) generateResticCommand() (*exec.ResticCommand, error) {
 	resticConfig := &store.ResticConfiguration{Host: request.Source.Host, Repository: request.Source.Repository}
 	restic := store.NewRestic(resticConfig)
 	resticInput := &store.ResticOptions{Options: request.Source.Options, Tags: request.Source.Tags}
-	return restic.Get(destDir, resticInput), nil
+	versionID := request.Version.VersionID
+	return restic.Get(destDir, resticInput, versionID), nil
 }
 
 func (c *InCommand) parseCommandOutput(output []byte) (string, error) {

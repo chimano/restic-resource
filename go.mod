@@ -3,7 +3,7 @@ module github.com/chimano/restic-resource
 go 1.14
 
 require (
-	github.com/arekmano/restic-store v0.0.0-20200618040110-e21a0686e80a
+	github.com/arekmano/restic-store v0.0.0-20200619011759-805cfb1414b7
 	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/go-delve/delve v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect

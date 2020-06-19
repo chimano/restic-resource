@@ -1,7 +1,9 @@
 package main
 
 import (
+	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/chimano/restic-resource/common"
@@ -15,13 +17,16 @@ func (r *MockReader) GetInputDirectory() (string, error) {
 	return os.Getenv("TEST_INDIR"), nil
 }
 
+var mockRequest = &common.Request{
+	Source: common.Source{
+		Repository: os.Getenv("TEST_REPO"),
+		Host:       os.Getenv("TEST_HOST"),
+	},
+	Version: common.Version{VersionID: strconv.FormatInt(rand.Int63(), 36)},
+}
+
 func (r *MockReader) GetRequest() (*common.Request, error) {
-	return &common.Request{
-		Source: common.Source{
-			Repository: os.Getenv("TEST_REPO"),
-			Host:       os.Getenv("TEST_HOST"),
-		},
-	}, nil
+	return mockRequest, nil
 }
 
 func TestIn(t *testing.T) {
@@ -30,4 +35,22 @@ func TestIn(t *testing.T) {
 	output, _ := command.Execute()
 	parsed, _ := c.parseCommandOutput(output)
 	assert.NotEmpty(t, parsed)
+}
+
+func TestInCommand(t *testing.T) {
+	c := InCommand{CommandReader: &MockReader{}}
+	command, _ := c.generateResticCommand()
+	expectedArgs := []string{
+		"--repo",
+		os.Getenv("TEST_REPO"),
+		"--host",
+		os.Getenv("TEST_HOST"),
+		"--verbose",
+		"--json",
+		"restore",
+		mockRequest.Version.VersionID,
+		"--target",
+		os.Getenv("TEST_INDIR"),
+	}
+	assert.Equal(t, expectedArgs, command.Arguments)
 }

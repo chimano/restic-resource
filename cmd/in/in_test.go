@@ -1,9 +1,7 @@
 package main
 
 import (
-	"math/rand"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/chimano/restic-resource/common"
@@ -22,7 +20,7 @@ var mockRequest = &common.Request{
 		Repository: os.Getenv("TEST_REPO"),
 		Host:       os.Getenv("TEST_HOST"),
 	},
-	Version: common.Version{VersionID: strconv.FormatInt(rand.Int63(), 36)},
+	Version: common.Version{VersionID: "latest"},
 }
 
 func (r *MockReader) GetRequest() (*common.Request, error) {
@@ -33,7 +31,8 @@ func TestIn(t *testing.T) {
 	c := InCommand{CommandReader: &MockReader{}}
 	command, _ := c.generateResticCommand()
 	output, _ := command.Execute()
-	parsed, _ := c.parseCommandOutput(output)
+	parsed, err := c.parseCommandOutput(output)
+	assert.NoError(t, err)
 	assert.NotEmpty(t, parsed)
 }
 

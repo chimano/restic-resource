@@ -12,8 +12,7 @@ type InputReader interface {
 	GetRequest() (*Request, error)
 }
 
-type Reader struct {
-}
+type Reader struct{}
 
 func (r *Reader) GetInputDirectory() (string, error) {
 	if len(os.Args) <= 1 {

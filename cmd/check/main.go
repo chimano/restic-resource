@@ -55,7 +55,7 @@ func (c *CheckCommand) generateResticCommand() (*exec.ResticCommand, error) {
 	resticConfig := &store.ResticConfiguration{Host: request.Source.Host, Repository: request.Source.Repository}
 	restic := store.NewRestic(resticConfig)
 	resticInput := &store.ResticOptions{Options: request.Source.Options, Tags: request.Source.Tags}
-	return restic.ListSnapshots(resticInput), nil
+	return restic.ListSnapshots(resticInput)
 }
 
 func (c *CheckCommand) parseCommandOutput(output []byte) ([]common.Version, error) {

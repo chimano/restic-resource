@@ -1,3 +1,7 @@
+#!/usr/bin/bash
+
+set -x
+
 export RESTIC_PASSWORD=testpass
 export TEST_REPO="${PWD}/testrepo"
 export TEST_OUTFILE="${PWD}/testfile.txt"
@@ -8,9 +12,7 @@ echo "test" > $TEST_OUTFILE
 
 restic init --repo $TEST_REPO
 restic backup --repo testrepo --host $TEST_HOST $TEST_OUTFILE
-go test github.com/chimano/restic-resource/cmd/out
-go test github.com/chimano/restic-resource/cmd/in
-go test github.com/chimano/restic-resource/cmd/check
+go test ./... -v --cover
 
 # cleaning up
 rm -rf $TEST_INDIR
